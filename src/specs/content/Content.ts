@@ -22,10 +22,13 @@ export default class Content {
     }
 
     renderContentItem(item: SupportedContentItems) : string {
-        if (item.type === 'image') {
-            return '';
-        } else if (item.type === 'text') {
+        if (!this.renderer) {
             return '';
         }
+        const renderer = this.renderer.getRenderer(item.type);
+        if (!renderer) {
+            return '';
+        }
+        return renderer(item.type, item.data);
     }
 }
