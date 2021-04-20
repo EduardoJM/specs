@@ -1,6 +1,6 @@
 
 export interface EnemCustomData {
-    book: 'Amarelo' | 'Branco' | 'Azul' | 'Rosa' | 'Cinza';
+    book: 'Amarelo' | 'Branco' | 'Azul' | 'Rosa' | 'Cinza' | 'Desconhecido';
 }
 
 export interface SupportedExamsDataMap {

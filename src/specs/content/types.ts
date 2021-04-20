@@ -8,7 +8,6 @@ export interface ContentDataText {
 export interface ContentDataImage {
     src: string;
     pathType?: ContentPathType;
-    credits?: string;
 }
 
 export interface ContentDataList {

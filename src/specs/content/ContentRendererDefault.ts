@@ -29,7 +29,7 @@ export default class ContentRendererDefault implements ContentRenderer {
         }
     }
 
-    getRenderer<K extends keyof ContentTypesMap>(type: K): ContentItemRenderer<any> {
+    getRenderer<K extends keyof ContentTypesMap>(type: K): ContentItemRenderer<any> | null {
         if (type === 'text') {
             return this.renderText;
         } else if (type === 'image') {
@@ -41,6 +41,7 @@ export default class ContentRendererDefault implements ContentRenderer {
         } else if (type === 'credits') {
             return this.renderCredits;
         }
+        return null;
     }
 
     renderCredits(type: 'credits', data: ContentDataCredits): string {
@@ -50,7 +51,11 @@ export default class ContentRendererDefault implements ContentRenderer {
     renderTable(type: 'table', data: ContentDataTable): string {
         const rows = data.map((row) => {
             const cells = row.columns.map((cell) => {
-                const content = this.getRenderer(cell.content.type)(cell.content.type, cell.content.data);
+                const renderer = this.getRenderer(cell.content.type);
+                if (!renderer) {
+                    throw new Error('invalid content type: ' + cell.content.type);
+                }
+                const content = renderer(cell.content.type, cell.content.data);
                 const element = cell.isHeader ? 'th' : 'td';
                 const colspan = cell.colspan !== undefined ? ` colspan="${cell.colspan}"` : '';
                 const rowspan = cell.rowspan !== undefined ? ` rowspan="${cell.rowspan}"` : '';
@@ -63,7 +68,14 @@ export default class ContentRendererDefault implements ContentRenderer {
 
     renderList(type: 'list', data: ContentDataList): string {
         const element = data.listType == 'ordered' ? 'ol' : 'ul';
-        return `<${element}>${data.items.map((item) => this.getRenderer(item.type)(item.type, item.data)).join('')}</${element}>`;
+        const content = data.items.map((item) => {
+            const renderer = this.getRenderer(item.type);
+            if (!renderer) {
+                throw new Error('invalid content type: ' + item.type);
+            }
+            return renderer(item.type, item.data);
+        }).join('');
+        return `<${element}>${content}</${element}>`;
     }
 
     renderText(type: 'text', data: ContentDataText): string {
@@ -72,16 +84,7 @@ export default class ContentRendererDefault implements ContentRenderer {
 
     renderImage(type: 'image', data: ContentDataImage): string {
         const url = this.makeUrl(data.src, data.pathType);
-        const img = `<img src="${url}" />`;
-        if (data.credits) {
-            return `
-                <div class="image-container">
-                    ${img}
-                    <div class="image-credits">${data.credits}</div>
-                </div>
-            `;
-        }
-        return img;
+        return `<img src="${url}" />`;
     }
 
     makeUrl(url: string, pathType?: ContentPathType): string {
