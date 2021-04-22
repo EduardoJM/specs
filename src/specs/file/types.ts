@@ -30,3 +30,5 @@ export interface SpecFile<K extends keyof QuestionFileTypeMap> {
     type: K;
     data: QuestionFileTypeMap[K];
 }
+
+export type SupportedSpecFiles = SpecFile<'question'> | SpecFile<'collection'>;
