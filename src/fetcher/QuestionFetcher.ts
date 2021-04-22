@@ -1,3 +1,4 @@
+import fs from 'fs';
 import path from 'path';
 import axios from 'axios';
 
@@ -74,6 +75,24 @@ export class QuestionFetcher {
                     }
                 } else {
                     console.log('## ERROR');
+                }
+            } catch(error) {
+                console.log('## ERROR\r\n');
+                console.log(JSON.stringify(error, null, 2));
+            }
+        } else {
+            try {
+                const data = fs.readFileSync(path, { encoding: 'utf-8' }).toString();
+                const json = JSON.parse(data);
+                const questionItem = parseJson(json);
+                if (!questionItem) {
+                    console.log('## ERROR PARSING FILE');
+                    return;
+                }
+                if (questionItem.type === 'question') {
+                    this.questions.push(questionItem.data);
+                } else {
+                    this.questions.push(...questionItem.data);
                 }
             } catch(error) {
                 console.log('## ERROR\r\n');
